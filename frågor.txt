@@ -1,0 +1,169 @@
+1. Vad är push respektive pull?
+
+Du använder git push för att skicka dina lokala ändringar till remote repositoryt.
+Du använder git pull för att hämta ändringar från remote repot till ditt lokala repo. 
+
+2. När använder man log respektive status?
+
+git log för att se commit historiken.
+git status för att se statuset på ditt working directory och staging area. 
+Du ser t.ex. i vilken branch du befinner dig just nu, om det finns någonting att committa samt filerna 
+du har ändrat men inte addat till staging area. 
+
+3. Vad är en Git branch och varför är de viktiga? 
+
+Ett separat ställe där du kan göra ändringar utan att påverka main branchen. 
+Dom är viktiga för att inte påverka main branchen (main projektet) och så att flera 
+personer kan jobba parallelt utan att påverka varandras kod. 
+
+4. Det finns flera sätt att rulla tillbaka koden till ett tidigare tillstånd. 
+Förklara skillnaden och motivera när man skulle använda den ena eller andra metoden. 
+Ge exempel på de kommandon du använder för att göra detta och visa att det fungerar, 
+vilken output du fick från git-kommandona. 
+
+------------------------ GIT RESTORE - restore files ---------------------------------------------------
+
+Exempel på git restore:
+
+A) Jag har en fil hello.txt och jag ändrar texten till "Hello there!"
+cat > hello.txt
+Hello there!
+
+B) Jag addar och committar ändringarna
+git add hello.txt
+git commit -m "change text"
+
+C) Jag ändrar texten igen i filen hello.txt
+cat > Hello.txt
+Hello there! I am Sanna!
+
+D) Jag vill få tillbaka gamla texten "Hello there!"
+git restore hello.txt
+
+--> jag restorar filen (hur den såg ut i tidigare committen)
+--> commit-historiken ändras inte
+--> undoar inte committade ändringar - bara ändringar i arbetskatalogen
+--> jag kan återställa hello.txt till en ännu tidigare commit genom att ange källa, t.ex. --source=HEAD~3
+--> om jag däremot redan har addat och committat ändringen (efter steget C i mitt exempel) så hjälper inte git restore.
+    Då behöver jag använda något annat kommando, t.ex. git revert. 
+--> om jag har råkat lägga till ändringarna till staging area med git add (men inte committat!),
+    kan jag ta bort den från staging area med git restore --staged hello.txt 
+
+------------------------ GIT REVERT - ångra utan att ändra historiken ----------------------------------
+Exempel på git revert:
+
+A) Jag skapar en fil "hello.txt" med text "Hello Git".
+B) Jag addar och committar
+git add hello.txt
+git commit -m "add file hello.txt and add text"
+
+C) Jag går och ändrar texten till "Hello there"
+D) Jag addar och committar igen
+git add hello.txt
+git commit -m "make a mistake on purpose"
+
+E) Jag vill se historiken
+git log
+
+--> Den visar något i stil: commit 48a4725... med meddelandet "make a mistake on purpose"
+
+F) Jag ångrar mig och vill få tillbaka gamla texten "Hello Git"
+git revert HEAD
+
+G) Jag vill se historiken
+git log
+
+--> Historiken visar något i stil: commit da1db33... med text "Revert "make a mistake on purpose. This reverts
+    commit 48a4725...
+
+--> en ny commit har skapats
+--> historiken har inte raderats eller ändrats
+--> jag har inverterat en tidigare commit
+
+H) Om jag nu kör cat hello.txt så kommer det stå "Hello Git" (inte "Hello there")
+
+------------------------ GIT RESET --soft ---------------------------------------------------------------------
+
+Exemple på git reset --soft:
+
+A) Jag har en hello.txt fil
+cat hello.txt
+Hello Git!
+
+B) Jag lägger till text
+cat >> hello.txt
+Hello world!
+
+C) Jag vill se ändringarna
+cat hello.txt
+Hello Git!
+Hello world!
+
+D) Jag lägger till ändringarna och committar
+git add hello.txt
+git commit -m "change text by adding Hello world!"
+
+E) Jag kör
+git reset --soft HEAD~1
+
+F) Jag vill se historiken
+git log
+
+G) ... jag vill se statuset
+git status
+
+H) ... och jag vill se hur min fil ser ut nu
+cat hello.txt
+
+--> jag ser att senaste committen är borta och HEAD har flyttats till en tidigare commit
+--> jag ser att ändringarna är i staging area
+--> jag ser att filen har inte påverkats av git reset --soft. Det står fortfarande Hello Git! Hello world!
+
+--> jag har alltså behållit ändringarna i staging area och working directory
+--> ... som om jag hade bara gjort git add hello.txt men INTE git commit..
+--> nu kan jag direkt committa igen t.ex. med ett bättre meddelande.
+
+------------------------ GIT RESET --mixed --------------------------------------------------------------------
+
+Om jag vill göra samma som med git reset --soft men OCKSÅ tömma staging area så ska jag göra git reset --mixed
+
+--> tar bort senaste committen och flyttar HEAD till en tidigare commit
+--> staging area töms
+--> behåller working directory (i hello.txt kommer det fortfarande stå "Hello Git! Hello world!")
+--> mixed är default (alltså om du inte anger --soft, --mixed eller --hard)
+
+--> om du kör git status som i mitt tidigare exemple steg G så kommer det inte finnas någonting i staging area
+--> därför måste du köra git add igen innan du kan committa igen 
+
+------------------------ GIT RESET --hard ---------------------------------------------------------------------
+
+Om jag vill göra samma som med git reset --mixed men OCKSÅ ta bort ändringarna i arbetskatalogen så ska jag göra
+git reset --hard
+
+--> tar bort senaste committen, flyttar HEAD till en tidigare commit
+--> staging area töms
+--> ändringarna i arbetskatalogen tas bort
+--> alla ocommittade ändringar försvinner permanent
+--> detta bör användas med försiktighet 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
